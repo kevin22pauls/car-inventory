@@ -35,7 +35,8 @@ module.exports = (client) => {
   
       // 5. IMPORTANT: PostgreSQL uses 'rowCount' for affected rows
       if (result.rowCount === 0) {
-    g     return res.status(400).json({ error: 'Car is already booked or sold' });
+        // THE TYPO 'g' WAS REMOVED FROM THIS LINE:
+        return res.status(400).json({ error: 'Car is already booked or sold' });
       }
   
       res.json({ message: 'Test drive booked successfully!' });
@@ -45,3 +46,4 @@ module.exports = (client) => {
   // 6. Return the configured router
   return router;
 };
+
