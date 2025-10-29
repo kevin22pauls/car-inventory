@@ -14,10 +14,8 @@ module.exports = (client) => {
     }
 
     // THIS QUERY IS NOW CLEAN:
-    // - Removed all leading whitespace/non-breaking spaces
-    // - Removed the stray '_' character
-    const query = `
-SELECT s.car_id, s.modelName, s.make, s.year, si.emi_av, 
+    // - Removed all leading/invisible whitespace.
+    const query = `SELECT s.car_id, s.modelName, s.make, s.year, si.emi_av, 
        e.interest, e.monthly, e.duration, si.price, si.status, si.delivery_date, si.advance_amt
 FROM car_specs s
 JOIN sales_info si ON s.car_id = si.car_id
