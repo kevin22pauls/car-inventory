@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMI Details</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Reset and global styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url('./image/wp7549932-car-garage-wallpapers.jpg') no-repeat center center fixed; /* Set image as background */
+    background-size: cover;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .emi-container {
+            width: 90%;
+            max-width: 1200px;
+            background-color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .emi-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        button.btn-book {
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button.btn-book:hover {
+            background-color: #27ae60;
+        }
+
+        span {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        p {
+            font-size: 18px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            button.btn-book {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="emi-container">
+        <h1>EMI Details for Selected Cars</h1>
+        <div id="emiDetailsContainer"></div>
+    </div>
+
+    <script>
+        function getUrlParams() {
+            const params = {};
+            window.location.search.substring(1).split("&").forEach(param => {
+                const [key, value] = param.split("=");
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+
+        function fetchEmiDetails(carIds) {
+            $.post('/emi-details', { car_ids: carIds }, function (data) {
+                displayEmiDetails(data);
+            }).fail(function (err) {
+                console.error('Error fetching EMI details:', err);
+                $('#emiDetailsContainer').html('<p>Error fetching EMI details. Please try again.</p>');
+            });
+        }
+
+        function displayEmiDetails(data) {
+            let html = '<h2>EMI Details</h2>';
+            html += '<table border="1" class="emi-table">';
+            html += '<tr><th>Car ID</th><th>Model Name</th><th>Make</th><th>Year</th><th>EMI Available</th><th>Price</th><th>Status</th><th>Delivery Date</th><th>Advance Amount</th><th>Action</th></tr>';
+
+            if (data.length === 0) {
+                html += '<tr><td colspan="10">No EMI details available for the selected cars.</td></tr>';
+            } else {
+                data.forEach(car => {
+                    const isAvailable = car.status?.trim().toLowerCase() === 'available';
+                    html += `<tr>
+                        <td>${car.car_id}</td>
+                        <td>${car.modelName}</td>
+                        <td>${car.make}</td>
+                        <td>${car.year}</td>
+                        <td>${car.emi_av === 'Yes' ? 'Yes' : 'No'}</td>
+                        <td>${car.price}</td>
+                        <td>${car.status}</td>
+                        <td>${car.delivery_date}</td>
+                        <td>${car.advance_amt}</td>
+                        <td>
+                            ${isAvailable ? `<button class="btn-book" data-car-id="${car.car_id}">Book Test Drive</button>` : '<span>N/A</span>'}
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            html += '</table>';
+            $('#emiDetailsContainer').html(html);
+
+            $('.btn-book').on('click', function () {
+            const carId = $(this).data('car-id');
+            window.location.href = `testDriveForm.html?car_id=${carId}`;
+            });
+            // $('.btn-book').on('click', function () {
+            //     const carId = $(this).data('car-id');
+            //     bookTestDrive(carId);
+            // });
+        }
+
+        function bookTestDrive(carId) {
+            $.post('/book-testdrive', { car_id: carId }, function (response) {
+                alert(response.message);
+                window.location.href = 'bookingConfirmation.html';
+            }).fail(function (err) {
+                console.error('Error booking test drive:', err);
+                alert('Failed to book the test drive. Please try again.');
+            });
+        }
+
+        const params = getUrlParams();
+        const selectedCarIds = params.car_ids ? params.car_ids.split(',') : [];
+        if (selectedCarIds.length > 0) {
+            fetchEmiDetails(selectedCarIds);
+        } else {
+            $('#emiDetailsContainer').html('<p>No cars selected. Please go back and select cars to view EMI details.</p>');
+        }
+    </script>
+</body>
+
+</html>

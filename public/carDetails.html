@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMI Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Body and Container Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #003E72, #FF5733);
+            color: #333;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .emi-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 1000px;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            color: #FFDD00;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px #003E72;
+        }
+
+        /* Table Styles */
+        .emi-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            font-size: 1em;
+            color: #333;
+            animation: slideUp 1s ease;
+        }
+
+        .emi-table th, .emi-table td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .emi-table th {
+            background: #FFDD00;
+            color: #003E72;
+            font-weight: bold;
+            border-bottom: 2px solid #003E72;
+        }
+
+        .emi-table tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .emi-table tr:hover {
+            background-color: rgba(0, 62, 114, 0.1);
+        }
+
+        .emi-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .emi-table td {
+            border: 1px solid #ddd;
+            border-width: 1px 0;
+        }
+
+        /* Message Styles */
+        #emiDetailsContainer p {
+            font-size: 1.2em;
+            color: #003E72;
+            margin-top: 20px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="emi-container">
+        <h1>EMI Details for Selected Cars</h1>
+        <div id="emiDetailsContainer"></div>
+    </div>
+
+    <script>
+        // Fetch URL parameters (car_ids)
+        function getUrlParams() {
+            const params = {};
+            window.location.search.substring(1).split("&").forEach(param => {
+                const [key, value] = param.split("=");
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+
+        // Function to fetch and display EMI details
+        function fetchEmiDetails(carIds) {
+            console.log("Sending car IDs to server:", carIds);
+
+            // Send POST request to '/emi-details'
+            $.post('/emi-details', { car_ids: carIds }, function(data) {
+                console.log("Received EMI details from server:", data);
+                displayEmiDetails(data);
+            }).fail(function(err) {
+                console.error('Error fetching EMI details:', err);
+                $('#emiDetailsContainer').html('<p>Error fetching EMI details. Please try again.</p>');
+            });
+        }
+
+        // Function to display EMI details in a table
+        function displayEmiDetails(data) {
+            let html = '<h2>EMI Details</h2>';
+            html += '<table border="1" class="emi-table">';
+            html += '<tr><th>Car ID</th><th>Model Name</th><th>Make</th><th>Year</th><th>EMI Available</th><th>Interest Rate (%)</th><th>Monthly Payment</th><th>Duration (Months)</th><th>Price</th><th>Status</th><th>Delivery Date</th><th>Advance Amount</th></tr>';
+
+            if (data.length === 0) {
+                html += '<tr><td colspan="12">No EMI details available for the selected cars.</td></tr>';
+            } else {
+                data.forEach(car => {
+                    html += `<tr>
+                        <td>${car.car_id}</td>
+                        <td>${car.modelName}</td>
+                        <td>${car.make}</td>
+                        <td>${car.year}</td>
+                        <td>${car.emi_av === 'Yes' ? 'Yes' : 'No'}</td>
+                        <td>${car.interest || 'N/A'}</td>
+                        <td>${car.monthly || 'N/A'}</td>
+                        <td>${car.duration || 'N/A'}</td>
+                        <td>${car.price}</td>
+                        <td>${car.status}</td>
+                        <td>${car.delivery_date}</td>
+                        <td>${car.advance_amt}</td>
+                    </tr>`;
+                });
+            }
+
+            html += '</table>';
+            $('#emiDetailsContainer').html(html);
+        }
+
+        // Get selected car IDs from URL and fetch their EMI details
+        const params = getUrlParams();
+        const selectedCarIds = params.car_ids ? params.car_ids.split(',') : [];
+        console.log("Selected car IDs from URL:", selectedCarIds);
+
+        if (selectedCarIds.length > 0) {
+            fetchEmiDetails(selectedCarIds);
+        } else {
+            $('#emiDetailsContainer').html('<p>No cars selected. Please go back and select cars to view EMI details.</p>');
+        }
+    </script>
+</body>
+</html>

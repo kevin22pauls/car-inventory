@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Perfect Ride</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-logo">CARFINDER.com</div> <!-- Logo removed -->
+            <ul class="nav-links">
+                <li><a href="#searchSection">Home</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Search Section -->
+    <section id="searchSection" class="search-container">
+        <h1>Search for Your Dream Car</h1>
+        <p>Find the best deals on certified used cars, tailored to your preferences!</p>
+        <form id="searchForm" action="/search" method="POST">
+            <div class="form-group">
+                <label for="modelName">Model Name:</label>
+                <input type="text" id="modelName" name="modelName" class="input-field" placeholder="e.g., Civic, Corolla">
+            </div>
+            <div class="form-group">
+                <label for="make">Make:</label>
+                <input type="text" id="make" name="make" class="input-field" placeholder="e.g., Toyota, Honda">
+            </div>
+            <div class="form-group">
+                <label for="year">Year (minimum):</label>
+                <input type="number" id="year" name="year" min="1886" max="2024" class="input-field" placeholder="e.g., 2015">
+            </div>
+            <div class="form-group">
+                <label for="kms">Maximum KMs Driven:</label>
+                <input type="number" id="kms" name="kms" class="input-field" placeholder="e.g., 50000">
+            </div>
+            <div class="form-group">
+                <label for="mileage">Minimum Mileage (km/l):</label>
+                <input type="number" id="mileage" name="mileage" step="0.01" class="input-field" placeholder="e.g., 15">
+            </div>
+            <button type="submit" class="btn-search">Search</button>
+        </form>
+    </section>
+
+    <div id="resultsContainer" style="display: none;"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/search',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(data) {
+                        displayResults(data);
+                    },
+                    error: function(err) {
+                        console.error('Error:', err);
+                    }
+                });
+            });
+
+            function displayResults(data) {
+                let html = '<h2>Search Results</h2>';
+                html += '<table class="results-table">';
+                html += '<tr><th>Select</th><th>Car ID</th><th>Model Name</th><th>Make</th><th>Year</th><th>KMs Driven</th><th>Mileage</th></tr>';
+
+                if (data.length === 0) {
+                    html += '<tr><td colspan="8">No cars found matching the criteria.</td></tr>';
+                } else {
+                    data.forEach(car => {
+                        html += `<tr>
+                            <td><input type="checkbox" name="car_ids[]" value="${car.car_id}"></td>
+                           
+                            <td>${car.car_id}</td>
+                            <td>${car.modelName}</td>
+                            <td>${car.make}</td>
+                            <td>${car.year}</td>
+                            <td>${car.kms}</td>
+                            <td>${car.mileage}</td>
+                        </tr>`;
+                    });
+                }
+
+                html += '</table>';
+                html += '<button id="showDetails" class="btn-details">Show Details</button>';
+                $('#resultsContainer').html(html).show();
+
+                $('#showDetails').on('click', function() {
+                    let selectedCars = $('input[name="car_ids[]"]:checked').map(function() {
+                        return this.value;
+                    }).get();
+
+                    if (selectedCars.length > 0) {
+                        window.location.href = 'emiDetails.html?car_ids=' + selectedCars.join(',');
+                    } else {
+                        alert('Please select at least one car.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
