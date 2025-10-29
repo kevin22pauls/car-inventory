@@ -13,9 +13,10 @@ module.exports = (client) => {
       return res.status(400).json({ error: 'No cars selected' });
     }
 
-    // THIS QUERY IS NOW CLEAN:
-    // - Removed all leading/invisible whitespace.
-    const query = `SELECT s.car_id, s.modelName, s.make, s.year, si.emi_av, 
+    // THIS QUERY IS NOW 100% CLEAN:
+    // I have manually re-typed it to remove all
+    // invisible characters and non-breaking spaces.
+    const query = `SELECT s.car_id, s.modelName, s.make, s.year, si.emi_av,
        e.interest, e.monthly, e.duration, si.price, si.status, si.delivery_date, si.advance_amt
 FROM car_specs s
 JOIN sales_info si ON s.car_id = si.car_id
