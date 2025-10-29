@@ -18,8 +18,7 @@ module.exports = (client) => {
     }
   
     // 3. Converted query to PostgreSQL placeholders ($1, $2)
-    const query = `
-      UPDATE sales_info
+    const query = `UPDATE sales_info
       SET status = $1
       WHERE car_id = $2 AND status NOT IN ('sold', 'booked')
     `;
