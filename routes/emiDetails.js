@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = (client) => {
-
   router.post('/', (req, res) => {
     const carIds = req.body.car_ids || [];
 
@@ -13,15 +12,17 @@ module.exports = (client) => {
       return res.status(400).json({ error: 'No cars selected' });
     }
 
-    // THIS QUERY IS NOW 100% CLEAN:
-    // I have manually re-typed it to remove all
-    // invisible characters and non-breaking spaces.
-    const query = `SELECT s.car_id, s.modelName, s.make, s.year, si.emi_av,
-       e.interest, e.monthly, e.duration, si.price, si.status, si.delivery_date, si.advance_amt
-FROM car_specs s
-JOIN sales_info si ON s.car_id = si.car_id
-LEFT JOIN emi_details e ON s.car_id = e.car_id
-WHERE s.car_id = ANY($1::int[])`;
+    // Clean SQL query (no invisible characters)
+    const query = `
+      SELECT 
+        s.car_id, s.modelName, s.make, s.year, 
+        si.emi_av, e.interest, e.monthly, e.duration, 
+        si.price, si.status, si.delivery_date, si.advance_amt
+      FROM car_specs s
+      JOIN sales_info si ON s.car_id = si.car_id
+      LEFT JOIN emi_details e ON s.car_id = e.car_id
+      WHERE s.car_id = ANY($1::int[]);
+    `;
 
     const params = [carIds];
 
@@ -46,4 +47,3 @@ WHERE s.car_id = ANY($1::int[])`;
 
   return router;
 };
-
