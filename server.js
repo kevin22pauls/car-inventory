@@ -27,11 +27,11 @@ const client = new Client({
 
 // Check connection
 client.connect((err) => {
-  if (err) {
-    console.error('❌ PostgreSQL connection failed:', err);
-  } else {
-    console.log('✅ Connected to PostgreSQL database.');
-  }
+  if (err) {
+    console.error('❌ PostgreSQL connection failed:', err);
+  } else {
+    console.log('✅ Connected to PostgreSQL database.');
+  }
 });
 
 // 5. IMPORTANT: Modified routes to pass the 'client' object
@@ -49,11 +49,11 @@ app.use('/book-testdrive', bookTestDriveRoute);
 
 // ✅ redirect root URL to search page (this is still correct)
 app.get('/', (req, res) => {
-  res.redirect('/search');
+  res.redirect('/search');
 });
 
 // Start server
 app.listen(PORT, () => {
   // Updated log message to show the correct port
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
